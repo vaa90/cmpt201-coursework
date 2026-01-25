@@ -1,0 +1,24 @@
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main(){
+  char path[100];
+  pid_t pid;
+  int status;
+  while(1){
+    printf("Enter programs to run.\n");
+    scanf("%s", path);
+    pid = fork();
+    if(pid == 0){
+      execlp(path, path, NULL);
+    }
+    else{
+      waitpid(pid, &status, 0);
+    }
+
+  }
+}
+
