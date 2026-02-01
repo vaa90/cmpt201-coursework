@@ -1,0 +1,33 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int buf_sz = 100;
+int out_sz = 5;
+
+void foo(char **out_buf);
+
+int main(){
+  char* buf1 = (char*)malloc(buf_sz*sizeof(char));
+  char* buf2 = (char*)malloc(buf_sz*sizeof(char));
+  char* buf3 = (char*)malloc(buf_sz*sizeof(char));
+  char* buf4 = (char*)malloc(buf_sz*sizeof(char));
+  char* buf5 = (char*)malloc(buf_sz*sizeof(char));
+  char* out_buf[] = {buf1, buf2, buf3, buf4, buf5};
+  int i = 0;
+
+  while(1){
+    printf("Enter input: ");
+    getline(out_buf[i], &buf_sz, stdin);
+    if(strcmp(out_buf[i], "print"){
+      foo(out_buf);
+    }
+  }
+
+}
+
+void foo(char **out_buf){
+  for(int i = 0; i<out_sz; i++){
+    printf("%s", out_buf[i]);
+  }
+}

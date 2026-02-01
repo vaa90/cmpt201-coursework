@@ -1,0 +1,52 @@
+#define _GNU_SOURCE
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BUF_SZ 100
+#define OUT_SZ 5
+
+void print_last(char **buf, int count, int last);
+
+int main() {
+    char *out_buf[OUT_SZ];
+    size_t buf_sz = BUF_SZ;
+    int i = 0;
+    int count = 0;
+
+    for (int j = 0; j < OUT_SZ; j++) {
+        out_buf[j] = NULL;
+    }
+
+    while (1) {
+        printf("Enter input: ");
+
+        if (getline(&out_buf[i], &buf_sz, stdin) == -1) {
+            break;
+        }
+
+        if (strcmp(out_buf[i], "print\n") == 0) {
+            print_last(out_buf, count, i);
+        } else {
+            i = (i + 1) % OUT_SZ;
+            if (count < OUT_SZ) count++;
+        }
+    }
+
+    for (int j = 0; j < OUT_SZ; j++) {
+        free(out_buf[j]);
+    }
+
+    return 0;
+}
+
+void print_last(char **buf, int count, int last) {
+    int idx = last;
+
+    for (int i = 0; i < count; i++) {
+        idx = (idx - 1 + OUT_SZ) % OUT_SZ;
+        printf("%s", buf[idx]);
+    }
+}
+
