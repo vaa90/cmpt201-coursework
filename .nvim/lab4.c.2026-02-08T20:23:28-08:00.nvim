@@ -1,0 +1,75 @@
+#define _POSIX_C_SOURCE 200809L
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+extern void *sbrk(intptr_t increment);
+
+#define EXTRA_SIZE 256
+#define BUF_SIZE 128
+
+struct header {
+  uint64_t size;
+  struct header *next;
+};
+
+void print_out(char *format, void *data, size_t data_size) {
+  char buf[BUF_SIZE];
+  ssize_t len;
+  if (data_size == sizeof(uint64_t)) {
+     len = snprintf(buf, BUF_SIZE, format, *(uint64_t *)data);
+  } else {
+     len = snprintf(buf, BUF_SIZE, format, data);  
+  }
+  if (len < 0) {
+    exit(EXIT_FAILURE);
+  }
+  write(STDOUT_FILENO, buf, len);
+}
+
+void increase_heap_size(void *start) { start = sbrk(EXTRA_SIZE); }
+
+void initialize_block(struct header *block, size_t sz, struct header *nx,
+                      int fill) {
+  block->size = sz;
+  block->next = nx;
+  memset((char *)block + sizeof(struct header), 0, sz);
+}
+
+void print_this(struct header *block1, struct header *block2) {
+  print_out("first block:       %p\n", block1, sizeof(void *));
+  print_out("second block:      %p\n", block2, sizeof(void *));
+  print_out("first block size:  %lu\n", &block1->size, sizeof(uint64_t));
+  print_out("first block next:  %p\n", block1->next, sizeof(void *));
+  print_out("second block size: %lu\n", &block2->size, sizeof(uint64_t));
+  print_out("second block next: %p\n", block2->next, sizeof(void *));
+  for (size_t i = 0; i < block1->size; i++) {
+    char c = *((char *)block1 + sizeof(struct header) + i);
+    write(STDOUT_FILENO, &c, 1);
+    if (i != block1->size - 1)
+      write(STDOUT_FILENO, "\n", 1);
+  }
+  for (size_t i = 0; i < block2->size; i++) {
+    char c = *((char *)block2 + sizeof(struct header) + i);
+    write(STDOUT_FILENO, &c, 1);
+    if (i != block2->size - 1)
+      write(STDOUT_FILENO, "\n", 1);
+  }
+}
+
+// Pseudocode idea:
+int main() {
+  void *heap_start;
+  increase_heap_size(heap_start);
+  size_t block_size = (EXTRA_SIZE / 2) - sizeof(struct header);
+  struct header *block1 = (struct header *)heap_start;
+  struct header *block2 =
+      (struct header *)((char *)heap_start + EXTRA_SIZE / 2);
+  initialize_block(block1, block_size, NULL, 0);
+  initialize_block(block2, block_size, block1, 1);
+  // May want to print as you go for debugging
+  print_this(block1, block2);
+  return 0;
+}
